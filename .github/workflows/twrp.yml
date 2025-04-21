@@ -92,7 +92,7 @@ jobs:
       - name: Set Variables
         run: |
           echo "date=$(TZ=Asia/Bangkok date +%Y%m%d-%H%M)" >> $GITHUB_OUTPUT
-          echo "Outdir=${GITHUB_WORKSPACE}out/target/product/${{ matrix.target }}" >> $GITHUB_OUTPUT
+          echo "Outdir=${GITHUB_WORKSPACE}/out/target/product/${{ matrix.target }}" >> $GITHUB_OUTPUT
         id: var
 
       - name: Add Img to Tar
