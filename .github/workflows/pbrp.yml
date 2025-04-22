@@ -1,0 +1,116 @@
+name: Build PBRP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: github.event.repository.owner.id == github.event.sender.id
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [dm3q]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Cleanup
+        uses: rokibhasansagar/slimhub_actions@main
+
+      - name: Set TimeZones
+        run: |
+          sudo timedatectl set-timezone Asia/Bangkok
+          sudo dpkg-reconfigure tzdata
+          echo "date=$(TZ=Asia/Bangkok date +%Y%m%d-%H%M)"
+
+      - name: Set up build environment
+        run: |
+          sudo apt update
+          sudo apt -y upgrade
+          sudo apt -y install gperf gcc-multilib gcc-10-multilib g++-multilib g++-10-multilib libc6-dev x11proto-core-dev libx11-dev tree lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc bc ccache lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev libxml2 lzop pngcrush schedtool squashfs-tools imagemagick libbz2-dev lzma ncftp qemu-user-static libstdc++-10-dev python3 tar lz4
+
+      - name: Install OpenJDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Install repo
+        run: |
+          mkdir ~/bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod a+x ~/bin/repo
+          sudo ln -sf ~/bin/repo /usr/bin/repo
+          
+      - name: Init Repo
+        run: |
+          export HOME=${GITHUB_WORKSPACE}
+          cd ${GITHUB_WORKSPACE}
+          git config --global user.name "knoxx-0x1"
+          git config --global user.email "knoxx.0x1@gmail.com"
+          repo init --depth=1 -u https://github.com/PitchBlackRecoveryProject/manifest_pb -b android-12.1
+      
+      - name: Repo Sync
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          repo sync -j$(nproc --all) --force-sync
+      
+      - name: Clone Device Tree
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          git clone https://github.com/knoxx-0x1/pbrp_device_samsung_${{ matrix.target }}.git -b android-12.1 device/samsung/${{ matrix.target }}
+      
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 12 
+      
+      - name: Bypass Mkbootimg
+        run: |   
+          cd ${GITHUB_WORKSPACE}/device/samsung/${{ matrix.target }}
+          chmod +x mkbootimg
+        continue-on-error: true
+        
+      - name: Building recovery
+        run: |
+          cd ${GITHUB_WORKSPACE}
+          export ALLOW_MISSING_DEPENDENCIES=true
+          source build/envsetup.sh
+          lunch pb_${{ matrix.target }}-eng
+          rm -rf .repo/
+          make clean
+          make recoveryimage -j$(nproc --all)
+        continue-on-error: true  
+      
+      - name: Set Variables
+        run: |
+          echo "date=$(TZ=Asia/Bangkok date +%Y%m%d-%H%M)" >> $GITHUB_OUTPUT
+          echo "Outdir=${GITHUB_WORKSPACE}/out/target/product/${{ matrix.target }}" >> $GITHUB_OUTPUT
+        id: var
+
+      - name: Add Img to Tar
+        run: |
+          cd ${{ steps.var.outputs.Outdir }}
+          lz4 -B6 --content-size recovery.img recovery.img.lz4
+          tar cvf twrp-${{ matrix.target }}-${{ steps.var.outputs.date }}.img.tar recovery.img.lz4
+          echo "name=$(find * -name *.tar -type f)" >> $GITHUB_OUTPUT
+        id: tarname
+
+      - name: Publish to GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+           files: ${{ steps.var.outputs.Outdir }}/${{ steps.tarname.outputs.name }}
+           name: ${{ steps.tarname.outputs.name }}-${{ github.run_id }}
+           tag_name: ${{ github.run_id }}
+           body: |
+             - None
+        env:
+           GITHUB_TOKEN: ${{ secrets.TEST }}
+          
