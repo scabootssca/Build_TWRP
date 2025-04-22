@@ -99,7 +99,7 @@ jobs:
         run: |
           cd ${{ steps.var.outputs.Outdir }}
           lz4 -B6 --content-size recovery.img recovery.img.lz4
-          tar cvf twrp-${{ matrix.target }}-${{ steps.var.outputs.date }}.img.tar recovery.img.lz4
+          tar cvf pbrp-${{ matrix.target }}-${{ steps.var.outputs.date }}.img.tar recovery.img.lz4
           echo "name=$(find * -name *.tar -type f)" >> $GITHUB_OUTPUT
         id: tarname
 
