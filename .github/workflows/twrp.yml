@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [e1s]
+        target: [e1s, e2s]
 
     steps:
       - name: Checkout repo
@@ -66,7 +66,6 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE}
           git clone https://github.com/archer-h61m/android_device_samsung_${{ matrix.target }}.git -b android-12.1 device/samsung/${{ matrix.target }}.git
-#git clone https://github.com/knoxx-0x1/android_device_samsung_${{ matrix.target }}.git -b android-12.1 device/samsung/${{ matrix.target }}
         continue-on-error: true   
       
       - name: Set Swap Space
@@ -99,7 +98,7 @@ jobs:
 
       - name: Add Img to Tar
         run: |
-          cd ${{ steps.var.outputs.Outdir }}
+          cd ${GITHUB_WORKSPACE}/out/target/product/${{ matrix.target }}
           lz4 -B6 --content-size recovery.img recovery.img.lz4
           tar cvf twrp-${{ matrix.target }}-${{ steps.var.outputs.date }}.img.tar recovery.img.lz4
           echo "name=$(find * -name *.tar -type f)" >> $GITHUB_OUTPUT
