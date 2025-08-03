@@ -11,7 +11,7 @@ jobs:
       contents: write
       
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         target: [e2s]
 
@@ -21,8 +21,8 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Cleanup
-        uses: rokibhasansagar/slimhub_actions@main
+      #- name: Cleanup
+     #   uses: rokibhasansagar/slimhub_actions@main
 
       - name: Set TimeZones
         run: |
