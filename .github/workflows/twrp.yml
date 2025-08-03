@@ -11,7 +11,7 @@ jobs:
       contents: write
       
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         target: [e2s]
 
