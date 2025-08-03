@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [e1s, e2s]
+        target: [e2s]
 
     steps:
       - name: Checkout repo
@@ -53,8 +53,8 @@ jobs:
         run: |
           export HOME=${GITHUB_WORKSPACE}
           cd ${GITHUB_WORKSPACE}
-          git config --global user.name "knoxx-0x1"
-          git config --global user.email "knoxx.0x1@gmail.com"
+          git config --global user.name "scabootssca"
+          git config --global user.email "scabootssca@gmail.com"
           repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-12.1
       
       - name: Repo Sync
