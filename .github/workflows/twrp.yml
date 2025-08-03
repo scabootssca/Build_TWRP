@@ -65,7 +65,7 @@ jobs:
       - name: Clone Device Tree
         run: |
           cd ${GITHUB_WORKSPACE}
-          git clone https://github.com/archer-h61m/android_device_samsung_${{ matrix.target }}.git -b android-12.1 device/samsung/${{ matrix.target }}.git
+          git clone https://github.com/scabootssca/android_device_samsung_${{ matrix.target }}.git -b android-12.1 device/samsung/${{ matrix.target }}.git
         continue-on-error: true   
       
       - name: Set Swap Space
