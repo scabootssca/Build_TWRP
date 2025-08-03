@@ -66,7 +66,7 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE}
           git clone https://github.com/scabootssca/android_device_samsung_${{ matrix.target }}.git -b android-12.1 device/samsung/${{ matrix.target }}.git
-        continue-on-error: true   
+      #  continue-on-error: true   
       
       - name: Set Swap Space
         uses: pierotofy/set-swap-space@master
@@ -77,7 +77,7 @@ jobs:
         run: |   
           cd ${GITHUB_WORKSPACE}/device/samsung/${{ matrix.target }}
           chmod +x mkbootimg
-        continue-on-error: true
+     #   continue-on-error: true
         
       - name: Building recovery
         run: |
@@ -88,7 +88,7 @@ jobs:
           rm -rf .repo/
           make clean
           make recoveryimage -j$(nproc --all)
-        continue-on-error: true  
+       # continue-on-error: true  
       
       - name: Set Variables
         run: |
